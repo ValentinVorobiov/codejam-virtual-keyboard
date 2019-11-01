@@ -1,5 +1,17 @@
-
+@import './assets/sass/common.scss' ;
 
 html, body {
+  @include default-font;
   font-size: 20px;
+}
+
+body {
+  min-height: 100vw;
+}
+
+.virtkeyb-page__wrapper {
+  @include container;
+  @include flexbox;
+  @include border-box-sizing;
+  padding: 2rem;
 }
