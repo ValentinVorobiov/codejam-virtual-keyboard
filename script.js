@@ -1,0 +1,3 @@
+
+let doc = document;
+

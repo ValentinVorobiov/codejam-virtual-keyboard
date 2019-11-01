@@ -1,0 +1,44 @@
+{
+  "name": "codejam-virtual-keyboard",
+  "version": "0.1.0",
+  "description": "RSSchool CodeJam Virtual Keyboard",
+  "main": "index.html",
+  "scripts": {
+    "test": "test",
+    "start": "webpack-dev-server --hot --open --mode development --disable-host-check",
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ValentinVorobiov/codejam-virtual-keyboard.git"
+  },
+  "author": "Valentin Vorobiov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ValentinVorobiov/codejam-virtual-keyboard/issues"
+  },
+  "homepage": "https://github.com/ValentinVorobiov/codejam-virtual-keyboard#readme",
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "copy-webpack-plugin": "^5.0.4",
+    "css-loader": "^3.2.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "fibers": "^4.0.2",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.12.0",
+    "sass": "^1.23.1",
+    "sass-loader": "^8.0.0",
+    "url-loader": "^2.2.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.2"
+  },
+  "dependencies": {
+    "file-loader": "^4.2.0",
+    "style-loader": "^1.0.0"
+  }
+}
