@@ -1,4 +1,4 @@
-const keyboardLayout = [
+const kbdLayout = [
   [
     'key_tilda', 'key_1', 'key_2', 'key_3', 'key_4', 'key_5', 'key_6', 'key_7', 'key_8', 'key_9',
     'key_0', 'key_minus', 'key_equal', 'key_backspace'
@@ -16,9 +16,9 @@ const keyboardLayout = [
     'key_comma' , 'key_dot' , 'key_slash' , 'key_up' , 'key_shift_right'
   ],
   [
-    'key_ctrl_left' , 'key_win_left' , 'key_alt_left' , 'key_space' , 'key_alt_right' , 'key_win_left' ,
+    'key_ctrl_left' , 'key_win_left' , 'key_alt_left' , 'key_space' , 'key_alt_right' , 'key_win_right' ,
     'key_left' , 'key_down' , 'key_left' , 'key_ctrl_right'
   ]
 ];
 
-module.exports.keyboardLayout = keyboardLayout;
+export { kbdLayout as keyboardLayout };

@@ -1,3 +1,9 @@
+$default_bgcolor : #363636;
+$default-forecolor: #bebebe;
+$default-bghover: #037b90;
+$default-forehover : #fefefe;
+
+
 @mixin default-font {
   font-family: Roboto,Segoe UI,"Tahoma, sans-serif";
 }
@@ -28,4 +34,5 @@
   box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box;
   -moz-box-sizing: border-box; -o-box-sizing: border-box;
 }
+
 
