@@ -12,13 +12,15 @@ class VirtualKeyboard {
       'RU' :  { layout: keyboardLayout, mapping: keymapRU } ,
     };
     this.eventHistory = [];
-    this.renderedString = '';
+    this.strings = [];
     this.parentElement = parentElement;
     this.shiftState = false;
     this.capsState = false;
     this.altState = false;
     this.controlState = false;
+    this.cursorPosition = 0;
 
+    this.renderInput();
     this.renderKeyboard();
   } // constructor
 
@@ -32,28 +34,54 @@ class VirtualKeyboard {
     this.keyboardKeys = null;
   }
 
-  renderKeyboard(   ){
+  clearRenderedLayout( ){
+    let oldLayoutWrapper = this.parentElement.querySelector( '.virtual-keyboard__layout-wrapper' );
+    if( oldLayoutWrapper ){ oldLayoutWrapper.remove() ; }
+    this.keyboardKeys = null;
+   }
 
-    this.clearRendered();
+  clearRenderedInput(){
+    let oldInputWrapper = this.parentElement.querySelector( '.virtual-keyboard__input-wrapper' );
+    if( oldInputWrapper ){ oldInputWrapper.remove(); }
+    this.keyboardInput = null;
+  }
 
+  renderInput(  ){
+
+    this.clearRenderedInput();
     this.keyboardInput = document.createElement( 'div' );
     this.keyboardInput.classList.add( 'virtual-keyboard__input-wrapper' );
-    let textarea = document.createElement( 'textarea' );
-    textarea.classList.add( 'virtual-keyboard__input' );
-    textarea.setAttribute( "rows", "25" );
-    textarea.setAttribute( "cols" , "80" );
-    this.keyboardInput.insertAdjacentElement( 'beforeEnd' , textarea );
 
+    this.textarea = document.createElement( 'textarea' );
+    this.textarea.classList.add( 'virtual-keyboard__input' );
+    this.textarea.setAttribute( "rows", "25" );
+    this.textarea.setAttribute( "cols" , "80" );
+    this.textarea.value = this.strings.join( '' );
+    this.keyboardInput.insertAdjacentElement( 'beforeEnd' , this.textarea );
 
+    let _instance = this;
+    this.keyboardInput.addEventListener( 'keydown', this.inputListener.bind( event, _instance ) );
+    this.keyboardInput.addEventListener( 'keyup', this.inputListener.bind( event, _instance ) );
+    this.keyboardInput.addEventListener( 'keypress', null );
+
+    this.parentElement.insertAdjacentElement( 'beforeEnd', this.keyboardInput );
+
+  };
+
+  renderKeyboard(  ){
+    this.clearRenderedLayout();
     this.keyboardKeys = document.createElement( 'div' );
     this.keyboardKeys.classList.add( 'virtual-keyboard__layout-wrapper' );
-    // console.log( '#renderKeyboard, selected keymap : ', this.keyboards[ this.actualLanguage ] );
+    if( this.shiftState ){ this.keyboardKeys.classList.add( 'shift-on' ); }
+    if( this.capsState ){ this.keyboardKeys.classList.add( 'caps-on' ); }
+    if( this.controlState ){ this.keyboardKeys.classList.add( 'control-on' ); }
+    if( this.altState ){ this.keyboardKeys.classList.add( 'alt-on' ); }
+
     let _keyboard =  this.keyboards[ this.actualLanguage ];
     let _rows = []; let itemIndex = 0;
 
     _keyboard.layout.forEach( ( row, i ) => {
 
-      // console.log( '#renderKeyboard, processing keyboard row : \n', row );
       let kbRow = document.createElement( 'div' );
           kbRow.classList.add( 'virtual-keyboard__layout-row' );
           kbRow.classList.add( 'keyboard-row' );
@@ -64,12 +92,12 @@ class VirtualKeyboard {
 
         itemIndex +=1;
         let _key = _keyboard.mapping[ keyName ];
-        // console.log( '#renderKeyboard, current key : \n', _key );
         let kbKey = document.createElement( 'div' );
             kbKey.classList.add( 'keyboard-key' );
             kbKey.classList.add( 'keyboard-key-'+itemIndex );
             kbKey.classList.add( keyName );
             kbKey.setAttribute( 'data-event-code' , _key.eventCode );
+            kbKey.setAttribute( 'data-keyname' , keyName );
         let _captionRegular = document.createElement( 'span' );
         _captionRegular.classList.add( 'caption-normal' );
         let _captionShift = document.createElement( 'span' );
@@ -105,86 +133,204 @@ class VirtualKeyboard {
       } );
 
       _rows.push( kbRow );
-     } );
+    } );
 
-     _rows.forEach( ( keyboardRow ) => {
+    _rows.forEach( ( keyboardRow ) => {
       this.keyboardKeys.insertAdjacentElement( 'beforeEnd' , keyboardRow );
-     } );
+    } );
 
-    this.parentElement.insertAdjacentElement( 'afterBegin', this.keyboardInput );
+    let _instance = this;
+
+    this.keyboardKeys.addEventListener( 'click', this.layoutListener.bind( event, _instance ) );
     this.parentElement.insertAdjacentElement( 'beforeEnd', this.keyboardKeys );
-    this.parentElement.addEventListener( 'keydown', this.commonListener );
-    this.parentElement.addEventListener( 'keyup', this.commonListener );
-    this.parentElement.addEventListener( 'keypress', null );
-    this.parentElement.addEventListener( 'click', this.commonListener );
 
 
-    // console.log( '#renderKeyboard finalizing, @renderKeys: \n' , this.keyboardKeys );
+  };
 
-  } // renderKeyboard()
+  renderAll(   ){
+    this.renderInput();
+    this.renderKeyboard();
+  } // renderAll()
 
   findKeyCodeElement( aKeyCode ){
+    let resultKey = null;
 
+    let keysArray = this.keyboardKeys.querySelectorAll( '.keyboard-key' );
+    keysArray.forEach( (keyElement) => {
+        if( keyElement.getAttribute( 'data-event-code' ).indexOf( aKeyCode ) > -1 ){
+            resultKey = keyElement;
+        }
+    } );
+
+    // resultKey = this.keyboardKeys.querySelector( '[data-event-code]="'+aKeyCode+'"' );
+
+    return resultKey;
   }
 
-  switchLanguage( newLanguage ){
+  toggleLanguage( newLanguage ){
     if( newLanguage == null ){
-
+      if( this.actualLanguage == 'RU' ){
+        this.actualLanguage = 'EN'
+      } else {
+        this.actualLanguage = 'RU'
+      }
     } else {
-
+      this.actualLanguage = newLanguage;
     }
-
+    console.log( 'SWITCHED TO LANGUAGE: ', this.actualLanguage );
     this.renderKeyboard();
-
-  }
-
-  commonListener( evt ){
-    evt.preventDefault;
-    console.log( 'VirtualKeyboard #commonListener :\n ' );
-    // console.log( '#commonListener @evt : \n', evt );
-    console.log( '#commonListener event type : \n', evt.type );
-    console.log( '#commonListener event target : \n', evt.target );
-
-    let isKeyDownEvent = ( evt.type == 'keydown' );
-    let isKeyUpEvent = ( evt.type == 'keyup' );
-    let isPhysicalKeyboardEvent = isKeyDownEvent || isKeyUpEvent ;
-
-    if( isPhysicalKeyboardEvent ){
-      console.log( 'Physical keyboard event detected \n' );
-      console.log( 'event.key: ', evt.key );
-      console.log( 'event.code: ', evt.code );
-      let keyCode = evt.code;
-      let keyKey = evt.key;
-
-      if( isKeyDownEvent ){
-
-      }
-      if( isKeyUpEvent ){
-
-      }
-    }
-
   }
 
   toggleShift( newState ){
+
     if( newState == null ){
       this.shiftState = !this.shiftState;
     } else {
       this.shiftState = newState;
     }
 
-    this.renderKeyboard();
+    if( this.shiftState ){
+      this.keyboardKeys.classList.add( 'shift-on' );
+    } else {
+      this.keyboardKeys.classList.remove( 'shift-on' );
+    }
   }
 
   toggleCaps( newState ){
     if( newState == null ){
-    this.capsState = !this.capsState
+      this.capsState = !this.capsState
     } else {
       this.capsState = newState;
     }
+
     this.renderKeyboard();
+
   }
 
+  toggleAlt( newState ){
+    if( newState == null ){
+      this.altState = !this.altState;
+    } else {
+      this.altState = newState;
+    }
+  }
+
+  toggleControl( newState ){
+    if( newState == null ){
+      this.controlState = !this.controlState;
+    } else {
+      this.controlState = newState;
+    }
+  }
+
+
+
+  inputListener( _instance, evt ){
+    evt.preventDefault;
+    console.log( 'VirtualKeyboard #inputListener :\n ' );
+    console.log( '#inputListener @event: ', evt );
+    console.log( '#inputListener @_instance: ', _instance );
+
+    let isKeyDownEvent = ( evt.type == 'keydown' );
+    let isKeyUpEvent = ( evt.type == 'keyup' );
+    let isPhysicalKeyboardEvent = isKeyDownEvent || isKeyUpEvent ;
+    let virtualKey = _instance.findKeyCodeElement.call( _instance, evt.code );
+    console.log( '#inputListener, @virtualKey: ', virtualKey );
+    _instance.eventHistory.push( { type: 'physical', fullEvent: evt, virtualKey : virtualKey } );
+
+    if( isPhysicalKeyboardEvent && virtualKey ){
+      console.log( 'Physical keyboard event detected \n' );
+      let keyCode = evt.code;
+      let keyKey = evt.key;
+      let keyObjectName = virtualKey.getAttribute( 'data-keyname' );
+      let keyObject = _instance.keyboards[ _instance.actualLanguage ].mapping[ keyObjectName ];
+
+      if( isKeyDownEvent ){
+
+        console.log( '#inputListener, Physical KeyDown Event...' );
+        virtualKey.classList.add( 'active' );
+        if( keyObject.isFn ){
+          let eventCommand = keyObject.eventType;
+          switch ( eventCommand ){
+            case 'toggleShift' :
+              _instance.toggleShift.call( _instance, true );
+              if( _instance.shiftState && _instance.altState ||
+                _instance.shiftState && _instance.controlState ) {
+                _instance.toggleLanguage.call( _instance );
+              }
+              break;
+            case 'toggleAlt' :
+              _instance.toggleAlt.call( _instance, true );
+              if( _instance.shiftState && _instance.altState ||
+                _instance.shiftState && _instance.controlState ) {
+                _instance.toggleLanguage.call( _instance );
+              }
+              break;
+            case 'toggleControl' :
+              _instance.toggleControl.call( _instance, true );
+              if( _instance.shiftState && _instance.altState ||
+                _instance.shiftState && _instance.controlState ) {
+                _instance.toggleLanguage.call( _instance );
+              }
+              break;
+            case 'toggleCaps' :
+              _instance.toggleCaps.call( _instance, null );
+              console.log( '#inputListener, instance capsState after change : ', _instance.capsState );
+              if( ! _instance.capsState ) {
+                  setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                }
+            break;
+            default: break;
+          } // switch
+        }
+        _instance.textarea.focus();
+
+      }
+
+      if( isKeyUpEvent ){
+        console.log( '#inputListener, Physical KeyUp Event...' );
+        let textarea = _instance.keyboardInput.querySelector( '.virtual-keyboard__input' );
+        console.log( 'textarea element value: \n ', textarea.value );
+        console.log( 'textarea cursor position: \n', textarea.selectionStart );
+
+        if( keyObject.isFn ){
+            let eventCommand = keyObject.eventType;
+            switch ( eventCommand ) {
+                case 'toggleShift' :
+                    _instance.toggleShift.call( _instance, false );
+                    setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                break ;
+                case 'toggleControl' :
+                    _instance.toggleControl.call( _instance, false ) ;
+                    setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                break ;
+                case 'toggleAlt' :
+                  _instance.toggleShift.call( _instance, false ) ;
+                  setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                break;
+                case 'removePrev' :
+                  setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                break;
+                case 'Tab':
+                  setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                break;
+                case 'newLine' :
+                  setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+                break;
+
+            } // switch
+        } else {
+            setTimeout( () => { virtualKey.classList.remove( 'active' ) } , 250 );
+        }
+
+      }
+    } // physical keyboard event
+
+  }
+
+  layoutListener( _instance, evt ){
+
+  }
 
 
 }

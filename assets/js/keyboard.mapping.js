@@ -67,7 +67,7 @@ const keyMappingEN = {
   'key_win_right' : { isFn: true, isLock: false, eventCode: 'MetaRight ', eventType: 'toggleWin', char: 'WIN' },
   'key_left' : { isFn: true, isLock: false, eventCode: 'ArrowLeft', eventType: 'movePrev' , char: '◄' },
   'key_down' : { isFn: true, isLock: false, eventCode: 'ArrowDown', eventType: 'moveDown' , char: '▼' },
-  'key_left' : { isFn: true, isLock: false, eventCode: 'ArrowRight', eventType: 'moveNext' , char: '►' },
+  'key_right' : { isFn: true, isLock: false, eventCode: 'ArrowRight', eventType: 'moveNext' , char: '►' },
   'key_ctrl_right' : { isFn: true, isLock: true, eventCode: 'ControlRight', eventType: 'toggleControl', char: 'Ctrl' } ,
 
 };
@@ -147,7 +147,7 @@ const keyMappingRU = {
   'key_win_right' : { isFn: true, isLock: false, eventCode: 'MetaRight ', eventType: 'toggleWin', char: 'WIN' },
   'key_left' : { isFn: true, isLock: false, eventCode: 'ArrowLeft', eventType: 'movePrev' , char: '◄' },
   'key_down' : { isFn: true, isLock: false, eventCode: 'ArrowDown', eventType: 'moveDown' , char: '▼' },
-  'key_left' : { isFn: true, isLock: false, eventCode: 'ArrowRight', eventType: 'moveNext' , char: '►' },
+  'key_right' : { isFn: true, isLock: false, eventCode: 'ArrowRight', eventType: 'moveNext' , char: '►' },
   'key_ctrl_right' : { isFn: true, isLock: true, eventCode: 'ControlRight', eventType: 'toggleControl', char: 'Ctrl' } ,
 
 };

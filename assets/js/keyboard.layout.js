@@ -17,7 +17,7 @@ const kbdLayout = [
   ],
   [
     'key_ctrl_left' , 'key_win_left' , 'key_alt_left' , 'key_space' , 'key_alt_right' , 'key_win_right' ,
-    'key_left' , 'key_down' , 'key_left' , 'key_ctrl_right'
+    'key_left' , 'key_down' , 'key_right' , 'key_ctrl_right'
   ]
 ];
 

@@ -60,7 +60,6 @@
 
     }
 
-
     .keyboard-key:hover,
     .keyboard-key:active,
     .keyboard-key:focus,
@@ -72,14 +71,32 @@
     }
 
     /* Display Logic */
-    &:not( .shift-active ):not( .caps-active ){
 
-      .keyboard-key .caption-normal { display: inline-block; }
-      .keyboard-key .caption-shift { display: none; }
-      .keyboard-key .caption-caps { display: none; }
 
-    }
+  }
 
+  &:not( .shift-on ):not( .caps-on ){
+    .keyboard-key .caption-normal { display: inline-block; }
+    .keyboard-key .caption-shift { display: none; }
+    .keyboard-key .caption-caps { display: none; }
+  }
+
+  &.caps-on {
+    .keyboard-key .caption-normal { display: none; }
+    .keyboard-key .caption-shift { display: none; }
+    .keyboard-key .caption-caps { display: inline-block; }
+  }
+
+  &.shift-on {
+    .keyboard-key .caption-normal { display: none; }
+    .keyboard-key .caption-shift { display: inline-block; }
+    .keyboard-key .caption-caps { display: none; }
+  }
+
+  &.shift-on.caps-on{
+    .keyboard-key .caption-normal { display: inline-block; }
+    .keyboard-key .caption-shift { display: none; }
+    .keyboard-key .caption-caps { display: none; }
   }
 
 }
