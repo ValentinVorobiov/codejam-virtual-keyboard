@@ -1,15 +1,11 @@
-import { virtualKeyboard } from './assets/js/keyboard.class.js' ;
+import VirtualKeyboard from './assets/js/keyboard.class.js';
 
-let mainContainer = document.querySelector( 'body' );
+console.log('Script.js attached successfully');
+const mainContainer = document.querySelector('body');
 
-let kbWrapper = document.createElement( 'div' );
-kbWrapper.classList.add( 'virtkeyb-page__wrapper' );
-    kbWrapper.classList.add( 'keyboard-wrapper' );
-    let mainKeyboard = new virtualKeyboard( kbWrapper );
-    document.mainKeyboard = mainKeyboard;
+const kbWrapper = document.createElement('div');
+kbWrapper.classList.add('virtkeyb-page__wrapper');
+kbWrapper.classList.add('keyboard-wrapper');
 
-  mainContainer.insertAdjacentElement( 'afterBegin' , kbWrapper );
-
-
-
-
+const mainKeyboard = new VirtualKeyboard(kbWrapper);
+mainContainer.insertAdjacentElement('afterBegin', kbWrapper);

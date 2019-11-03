@@ -85,6 +85,11 @@
     .keyboard-key .caption-normal { display: none; }
     .keyboard-key .caption-shift { display: none; }
     .keyboard-key .caption-caps { display: inline-block; }
+    .keyboard-key.key_capslock{
+      transition: 0.25s all ease-in;
+      background-color: $default-bghover;
+      color: $default-forehover;
+    }
   }
 
   &.shift-on {

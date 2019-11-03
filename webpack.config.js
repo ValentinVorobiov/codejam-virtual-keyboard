@@ -5,7 +5,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: './app.js',
-    // entry: './app/assets/js/codejam-canvas.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js'
@@ -108,6 +107,11 @@ module.exports = {
           {
             from: './script.js',
             to: './'
+          } ,
+          /* all js files */
+          {
+            from: './assets/js/**/**',
+            to: '/assets/js'
           } ,
           /* favicon */
           {
