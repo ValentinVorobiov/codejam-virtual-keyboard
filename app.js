@@ -6,7 +6,6 @@ import './style.scss';
 /* eslint-disable import/extensions */
 import VirtualKeyboard from './assets/js/keyboard.class';
 
-// console.log('Script.js attached successfully');
 const mainContainer = document.querySelector('body');
 
 const kbWrapper = document.createElement('div');

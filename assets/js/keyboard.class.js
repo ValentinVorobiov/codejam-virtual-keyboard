@@ -3,9 +3,6 @@ import keyboardLayout from './keyboard.layout.js';
 
 import { keymapEN, keymapRU } from './keyboard.mapping.js';
 
-// import '../sass/common.scss';
-// import '../sass/virtual-keyboard.scss';
-
 function hasClass(el, className) {
   let result = false;
   if (el.getAttribute('class').indexOf(className) > -1) {
@@ -13,10 +10,6 @@ function hasClass(el, className) {
   }
   return result;
 }
-
-// function removeClass(el, className) {
-//   if (hasClass(el, className)) { el.classList.remove(className); }
-// }
 
 function deactivateKey(keyElement, delay = 250) {
   let changed = false;
@@ -74,10 +67,7 @@ class VirtualKeyboard {
       inputValue: this.textarea.value.slice(),
       cursorPosition: this.textarea.selectionStart,
       states: {
-        // shiftState: this.shiftState,
         capsState: this.capsState,
-        // controlState: this.controlState,
-        // altState: this.altState,
       },
     });
     localStorage['rs-virtkey'] = saveData;
@@ -91,9 +81,6 @@ class VirtualKeyboard {
       this.actualLanguage = importedState.actualLanguage;
       this.strings = importedState.strings.slice();
       this.capsState = importedState.states.capsState;
-      // this.shiftState = importedState.states.shiftState;
-      // this.altState = importedState.states.altState;
-      // this.controlState = importedState.states.controlState;
       this.cursorPosition = importedState.cursorPosition;
     }
     return imported;
@@ -156,14 +143,12 @@ class VirtualKeyboard {
       const kbRow = document.createElement('div');
       kbRow.classList.add('virtual-keyboard__layout-row');
       kbRow.classList.add('keyboard-row');
-      // kbRow.classList.add('keyboard-row-' + i);
       const keys = [];
 
       row.forEach((keyName) => {
         const aKey = keyboard.mapping[keyName];
         const kbKey = document.createElement('div');
         kbKey.classList.add('keyboard-key');
-        // kbKey.classList.add('keyboard-key-' + itemIndex);
         kbKey.classList.add(keyName);
         kbKey.setAttribute('data-event-code', aKey.eventCode);
         kbKey.setAttribute('data-keyname', keyName);
@@ -223,7 +208,7 @@ class VirtualKeyboard {
   renderAll() {
     this.renderInput();
     this.renderKeyboard();
-  } // renderAll()
+  }
 
   findKeyCodeElement(aKeyCode) {
     let resultKey = null;
@@ -440,17 +425,10 @@ class VirtualKeyboard {
 
 
   inputListener(event) {
-    // evt.preventDefault();
-    // console.log( 'VirtualKeyboard #inputListener :\n ' );
-    // console.log('#inputListener @event: ', event);
-    // console.log( '#inputListener @_instance: ', _instance );
-    // console.log('#inputListener, @this:', this);
-
     const isKeyDownEvent = (event.type === 'keydown');
     const isKeyUpEvent = (event.type === 'keyup');
     const isPhysicalKeyboardEvent = isKeyDownEvent || isKeyUpEvent;
     const virtualKey = this.findKeyCodeElement.call(this, event.code);
-    // console.log( '#inputListener, @virtualKey: ', virtualKey );
 
     this.eventHistory.push({
       type: 'physicalKey',
@@ -471,13 +449,10 @@ class VirtualKeyboard {
     });
 
     if (isPhysicalKeyboardEvent && virtualKey) {
-      // console.log( 'Physical keyboard event detected \n' );
       const keyObjectName = virtualKey.getAttribute('data-keyname');
       const keyObject = this.keyboards[this.actualLanguage].mapping[keyObjectName];
 
       if (isKeyDownEvent) {
-        // console.log( '#inputListener, Physical KeyDown Event...' );
-        // virtualKey.classList.add('active');
         if (keyObject.isFn) {
           const eventCommand = keyObject.eventType;
           switch (eventCommand) {
@@ -486,7 +461,6 @@ class VirtualKeyboard {
                 this.toggleShift(true);
               }
               activateKey(virtualKey);
-              // this.toggleShift(true);
               if (
                 (this.shiftState && this.altState)
                 || (this.shiftState && this.controlState)) {
@@ -510,7 +484,6 @@ class VirtualKeyboard {
                 this.toggleControl(true);
               }
               activateKey(virtualKey);
-              // this.toggleControl(true);
               if (
                 (this.shiftState && this.altState)
                 || (this.shiftState && this.controlState)
@@ -569,17 +542,14 @@ class VirtualKeyboard {
           const eventCommand = keyObject.eventType;
           switch (eventCommand) {
             case 'toggleShift':
-              // this.toggleShift(false);
               if (this.shiftState) { this.toggleShift(false); }
               deactivateKey(virtualKey);
               break;
             case 'toggleControl':
-              // this.toggleControl(false);
               if (this.controlState) { this.toggleControl(false); }
               deactivateKey(virtualKey);
               break;
             case 'toggleAlt':
-              // this.toggleAlt(false);
               if (this.altState) { this.toggleAlt(false); }
               deactivateKey(virtualKey);
               break;
@@ -591,7 +561,6 @@ class VirtualKeyboard {
               deactivateKey(virtualKey);
               break;
             case 'newLine':
-              // this.textareaInsert('\n');
               deactivateKey(virtualKey);
               break;
             case 'moveUp':
