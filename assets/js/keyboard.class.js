@@ -334,7 +334,7 @@ class VirtualKeyboard {
     const initLength = currValue.length;
     const selStart = this.textarea.selectionStart;
     if (currValue && initLength && selStart > 0) {
-      currValue = currValue.slice(0, selStart - 1) + currValue.slice(selStart, initLength - 1);
+      currValue = currValue.slice(0, selStart - 1) + currValue.slice(selStart, initLength);
       this.textarea.value = currValue;
       this.textarea.selectionStart = selStart - 1;
       this.textarea.selectionEnd = selStart - 1;
@@ -372,6 +372,69 @@ class VirtualKeyboard {
     }
   }
 
+  textareaMoveUp() {
+    this.currentPosition = this.textarea.selectionStart;
+    this.strings = this.textarea.value.split('\n');
+    let beforeString = this.textarea.value.slice(0, this.currentPosition);
+    let beforeArray = [];
+    beforeArray = beforeString.split('\n');
+
+    if (beforeArray.length > 1) {
+      const lastStringIndex = beforeArray[beforeArray.length - 1].length;
+      const prevStringLength = beforeArray[beforeArray.length - 2].length;
+      let newIndex = 0;
+      if (lastStringIndex >= prevStringLength) {
+        newIndex = prevStringLength;
+      } else {
+        newIndex = lastStringIndex;
+      }
+      beforeArray.pop();
+      let newLastString = beforeArray[beforeArray.length - 1];
+      newLastString = newLastString.slice(0, newIndex);
+      beforeArray[beforeArray.length - 1] = newLastString;
+      beforeString = beforeArray.join('\n');
+      this.currentPosition = beforeString.length;
+      this.textarea.selectionStart = this.currentPosition;
+      this.textarea.selectionEnd = this.currentPosition;
+    } else {
+      this.textarea.selectionStart = 0;
+      this.textarea.selectionEnd = 0;
+    }
+  }
+
+  textareaMoveDown() {
+    this.currentPosition = this.textarea.selectionStart;
+    this.strings = this.textarea.value.split('\n');
+    let beforeString = this.textarea.value.slice(0, this.currentPosition);
+    let beforeArray = [];
+    beforeArray = beforeString.split('\n');
+
+    if (beforeArray.length < this.strings.length) {
+      const initStrCount = beforeArray.length;
+      const lastStringIndex = beforeArray[beforeArray.length - 1].length;
+      const nextStringLength = this.strings[beforeArray.length].length;
+      let newIndex = 0;
+      if (lastStringIndex >= nextStringLength) {
+        newIndex = nextStringLength;
+      } else {
+        newIndex = lastStringIndex;
+      }
+      beforeArray.pop();
+      beforeArray.push(this.strings[initStrCount - 1]);
+      beforeArray.push(this.strings[initStrCount]);
+      let newLastString = beforeArray[beforeArray.length - 1];
+      newLastString = newLastString.slice(0, newIndex);
+      beforeArray[beforeArray.length - 1] = newLastString;
+      beforeString = beforeArray.join('\n');
+      this.currentPosition = beforeString.length;
+      this.textarea.selectionStart = this.currentPosition;
+      this.textarea.selectionEnd = this.currentPosition;
+    } else {
+      this.textarea.selectionStart = 0;
+      this.textarea.selectionEnd = 0;
+    }
+  }
+
 
   inputListener(event) {
     // evt.preventDefault();
@@ -385,6 +448,7 @@ class VirtualKeyboard {
     const isPhysicalKeyboardEvent = isKeyDownEvent || isKeyUpEvent;
     const virtualKey = this.findKeyCodeElement.call(this, event.code);
     // console.log( '#inputListener, @virtualKey: ', virtualKey );
+
     this.eventHistory.push({
       type: 'physicalKey',
       fullEvent: event,
@@ -464,6 +528,18 @@ class VirtualKeyboard {
               activateKey(virtualKey);
               this.textarea.focus();
               deactivateKey(virtualKey);
+              break;
+            case 'moveUp':
+              activateKey(virtualKey);
+              break;
+            case 'movePrev':
+              activateKey(virtualKey);
+              break;
+            case 'moveDown':
+              activateKey(virtualKey);
+              break;
+            case 'moveNext':
+              activateKey(virtualKey);
               break;
             case 'removeNext':
               activateKey(virtualKey);
@@ -562,13 +638,11 @@ class VirtualKeyboard {
   layoutListener(event) {
     event.preventDefault();
     let eventTarget = event.target;
-    // console.log( '#layoutListener, event target: ', evt.target );
     let keyObject = null;
     let virtualKey = null;
     if (hasClass(eventTarget, 'caption-span')) {
       eventTarget = eventTarget.closest('.keyboard-key');
     }
-    // console.log( '#layoutListener, corrected event target: ', eventTarget );
     if (hasClass(eventTarget, 'keyboard-key')) {
       virtualKey = eventTarget;
       const keyName = eventTarget.getAttribute('data-keyname');
@@ -676,17 +750,28 @@ class VirtualKeyboard {
             }
             break;
           case 'movePrev':
-            virtualKey.classList.add('active');
+            activateKey(virtualKey);
             this.textareaMoveNext();
             deactivateKey(virtualKey, 450);
             break;
           case 'moveNext':
+            activateKey(virtualKey);
             this.textareaMoveNext();
             deactivateKey(virtualKey, 450);
             break;
           case 'moveUp':
+            activateKey(virtualKey);
+            this.textareaMoveUp();
+            deactivateKey(virtualKey, 450);
             break;
           case 'moveDown':
+            activateKey(virtualKey);
+            this.textareaMoveDown();
+            deactivateKey(virtualKey, 450);
+            break;
+          case 'toggleWin':
+            activateKey(virtualKey);
+            deactivateKey(virtualKey, 450);
             break;
           default: break;
         } // switch

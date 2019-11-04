@@ -61,14 +61,22 @@
     }
 
     .keyboard-key:hover,
-    .keyboard-key:active,
+    .keyboard-key:active {
+      transition: 0.25s all ease-in;
+      background-color: $default-bghover;
+      color: $default-forehover;
+    }
+
     .keyboard-key:focus,
     .keyboard-key.active,
     .keyboard-key.down {
       transition: 0.25s all ease-in;
       background-color: $default-bghover;
       color: $default-forehover;
+      border-radius: 70%;
     }
+
+
 
     /* Display Logic */
 
