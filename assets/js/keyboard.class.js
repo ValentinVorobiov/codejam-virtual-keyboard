@@ -1,4 +1,5 @@
-import { keyboardLayout } from './keyboard.layout.js';
+/* eslint-disable import/extensions */
+import keyboardLayout from './keyboard.layout.js';
 
 import { keymapEN, keymapRU } from './keyboard.mapping.js';
 
@@ -10,6 +11,28 @@ function hasClass(el, className) {
   return result;
 }
 
+// function removeClass(el, className) {
+//   if (hasClass(el, className)) { el.classList.remove(className); }
+// }
+
+function deactivateKey(keyElement, delay = 250) {
+  let changed = false;
+  if (hasClass(keyElement, 'active')) {
+    changed = true;
+    setTimeout(() => { keyElement.classList.remove('active'); }, delay);
+  }
+  return changed;
+}
+
+function activateKey(keyElement) {
+  let changed = false;
+  if (!hasClass(keyElement, 'active')) {
+    keyElement.classList.add('active');
+    changed = true;
+  }
+  return changed;
+}
+
 class VirtualKeyboard {
   constructor(parentElement, initLanguage) {
     // by default. setting language to EN
@@ -19,10 +42,13 @@ class VirtualKeyboard {
       this.actualLanguage = 'EN';
     }
     this.keyboards = {
+      // eslint-disable-next-line quote-props
       'EN': { layout: keyboardLayout, mapping: keymapEN },
+      // eslint-disable-next-line quote-props
       'RU': { layout: keyboardLayout, mapping: keymapRU },
     };
     this.eventHistory = [];
+    this.fnHistory = [];
     this.strings = [];
     this.parentElement = parentElement;
     this.shiftState = false;
@@ -30,13 +56,47 @@ class VirtualKeyboard {
     this.altState = false;
     this.controlState = false;
     this.cursorPosition = 0;
+    this.readFromStorage();
 
     this.renderInput();
     this.renderKeyboard();
-  } // constructor
+
+    this.textarea.focus();
+  }
+
+  saveToStorage() {
+    const saveData = JSON.stringify({
+      actualLanguage: this.actualLanguage,
+      strings: this.strings.slice(),
+      inputValue: this.textarea.value.slice(),
+      cursorPosition: this.textarea.selectionStart,
+      states: {
+        // shiftState: this.shiftState,
+        capsState: this.capsState,
+        // controlState: this.controlState,
+        // altState: this.altState,
+      },
+    });
+    localStorage['rs-virtkey'] = saveData;
+  }
+
+  readFromStorage() {
+    let imported = false;
+    if (localStorage['rs-virtkey']) {
+      imported = true;
+      const importedState = JSON.parse(localStorage['rs-virtkey']);
+      this.actualLanguage = importedState.actualLanguage;
+      this.strings = importedState.strings.slice();
+      this.capsState = importedState.capsState;
+      // this.shiftState = importedState.states.shiftState;
+      // this.altState = importedState.states.altState;
+      // this.controlState = importedState.states.controlState;
+      this.cursorPosition = importedState.cursorPosition;
+    }
+    return imported;
+  }
 
   clearRendered() {
-    /*  Pre-requisites: removing existing elements  */
     const oldInputWrapper = this.parentElement.querySelector('.virtual-keyboard__input-wrapper');
     const oldLayoutWrapper = this.parentElement.querySelector('.virtual-keyboard__layout-wrapper');
     if (oldInputWrapper) { oldInputWrapper.remove(); }
@@ -64,9 +124,9 @@ class VirtualKeyboard {
 
     this.textarea = document.createElement('textarea');
     this.textarea.classList.add('virtual-keyboard__input');
+    this.textarea.value = this.strings.join('\n');
     this.textarea.setAttribute('rows', '25');
     this.textarea.setAttribute('cols', '80');
-    this.textarea.value = this.strings.join('');
     this.keyboardInput.insertAdjacentElement('beforeEnd', this.textarea);
 
     const instance = this;
@@ -88,7 +148,7 @@ class VirtualKeyboard {
     if (this.altState) { this.keyboardKeys.classList.add('alt-on'); }
 
     const keyboard = this.keyboards[this.actualLanguage];
-    const rows = []; let itemIndex = 0;
+    const rows = [];
     keyboard.layout.forEach((row) => {
       const kbRow = document.createElement('div');
       kbRow.classList.add('virtual-keyboard__layout-row');
@@ -97,7 +157,6 @@ class VirtualKeyboard {
       const keys = [];
 
       row.forEach((keyName) => {
-        itemIndex += 1;
         const aKey = keyboard.mapping[keyName];
         const kbKey = document.createElement('div');
         kbKey.classList.add('keyboard-key');
@@ -131,6 +190,9 @@ class VirtualKeyboard {
           captionRegular.innerHTML = 'Space';
           captionShift.innerHTML = 'Space';
           captionCaps.innerHTML = 'Space';
+        }
+        if (this.capsState && aKey.eventCode === 'CapsLock') {
+          kbKey.classList.add('active');
         }
 
         kbKey.insertAdjacentElement('beforeEnd', captionRegular);
@@ -192,7 +254,9 @@ class VirtualKeyboard {
     } else {
       this.actualLanguage = newLanguage;
     }
-    console.log('SWITCHED TO LANGUAGE: ', this.actualLanguage);
+    this.shiftState = false;
+    this.altState = false;
+    this.controlState = false;
     this.renderKeyboard();
   }
 
@@ -291,6 +355,23 @@ class VirtualKeyboard {
     }
   }
 
+  textareaMoveNext() {
+    if (
+      this.textarea.value
+      && this.textarea.selectionStart < this.textarea.value.length - 1
+    ) {
+      this.textarea.selectionStart += 1;
+      this.textarea.selectionEnd = this.textarea.selectionStart;
+    }
+  }
+
+  textareaMovePrev() {
+    if (this.textarea.selectionStart > 0 && this.textarea.value) {
+      this.textarea.selectionStart -= 1;
+      this.textarea.selectionEnd = this.textarea.selectionStart;
+    }
+  }
+
 
   inputListener(event) {
     // evt.preventDefault();
@@ -304,23 +385,41 @@ class VirtualKeyboard {
     const isPhysicalKeyboardEvent = isKeyDownEvent || isKeyUpEvent;
     const virtualKey = this.findKeyCodeElement.call(this, event.code);
     // console.log( '#inputListener, @virtualKey: ', virtualKey );
-    this.eventHistory.push({ type: 'physical', fullEvent: event, virtKey: virtualKey });
+    this.eventHistory.push({
+      type: 'physicalKey',
+      fullEvent: event,
+      virtKey: virtualKey,
+      initStates: {
+        shiftState: this.shiftState,
+        capsState: this.capsState,
+        altState: this.altState,
+        controlState: this.controlState,
+      },
+      textareaState: {
+        selStart: this.textarea.selectionStart,
+        selEnd: this.textarea.selectionEnd,
+        text: this.textarea.value,
+      },
+      strings: this.strings,
+    });
 
     if (isPhysicalKeyboardEvent && virtualKey) {
       // console.log( 'Physical keyboard event detected \n' );
-      // const keyCode = evt.code;
-      // const keyKey = evt.key;
       const keyObjectName = virtualKey.getAttribute('data-keyname');
       const keyObject = this.keyboards[this.actualLanguage].mapping[keyObjectName];
 
       if (isKeyDownEvent) {
         // console.log( '#inputListener, Physical KeyDown Event...' );
-        virtualKey.classList.add('active');
+        // virtualKey.classList.add('active');
         if (keyObject.isFn) {
           const eventCommand = keyObject.eventType;
           switch (eventCommand) {
             case 'toggleShift':
-              this.toggleShift(true);
+              if (!this.shiftState) {
+                this.toggleShift(true);
+              }
+              activateKey(virtualKey);
+              // this.toggleShift(true);
               if (
                 (this.shiftState && this.altState)
                 || (this.shiftState && this.controlState)) {
@@ -328,7 +427,10 @@ class VirtualKeyboard {
               }
               break;
             case 'toggleAlt':
-              this.toggleAlt(true);
+              if (!this.altState) {
+                this.toggleAlt(true);
+              }
+              activateKey(virtualKey);
               if (
                 (this.shiftState && this.altState)
                 || (this.shiftState && this.controlState)
@@ -337,7 +439,11 @@ class VirtualKeyboard {
               }
               break;
             case 'toggleControl':
-              this.toggleControl(true);
+              if (!this.controlState) {
+                this.toggleControl(true);
+              }
+              activateKey(virtualKey);
+              // this.toggleControl(true);
               if (
                 (this.shiftState && this.altState)
                 || (this.shiftState && this.controlState)
@@ -348,76 +454,108 @@ class VirtualKeyboard {
             case 'toggleCaps':
               this.toggleCaps(null);
               if (!this.capsState) {
-                setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+                deactivateKey(virtualKey);
               } else {
-                virtualKey.classList.add('active');
+                activateKey(virtualKey);
               }
-
               break;
             case 'insertTab':
               this.textareaInsert.call(this, '    ');
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              activateKey(virtualKey);
               this.textarea.focus();
+              deactivateKey(virtualKey);
+              break;
+            case 'removeNext':
+              activateKey(virtualKey);
+              break;
+            case 'removePrev':
+              activateKey(virtualKey);
               break;
             default: break;
           } // switch
+          this.fnHistory.push({
+            type: 'physicalKey',
+            eventType: event.type,
+            virtKey: virtualKey,
+            keyObj: keyObject,
+          });
+        } else {
+          activateKey(virtualKey);
         }
         this.textarea.focus();
       }
 
       if (isKeyUpEvent) {
-        // console.log( '#inputListener, Physical KeyUp Event...' );
-        const textarea = this.keyboardInput.querySelector('.virtual-keyboard__input');
-        // console.log( 'textarea element value: \n ', textarea.value );
-        // console.log( 'textarea cursor position: \n', textarea.selectionStart );
-
         if (keyObject.isFn) {
           const eventCommand = keyObject.eventType;
           switch (eventCommand) {
             case 'toggleShift':
-              this.toggleShift(false);
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              // this.toggleShift(false);
+              if (this.shiftState) { this.toggleShift(false); }
+              deactivateKey(virtualKey);
               break;
             case 'toggleControl':
-              this.toggleControl(false);
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              // this.toggleControl(false);
+              if (this.controlState) { this.toggleControl(false); }
+              deactivateKey(virtualKey);
               break;
             case 'toggleAlt':
-              this.toggleAlt(false);
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              // this.toggleAlt(false);
+              if (this.altState) { this.toggleAlt(false); }
+              deactivateKey(virtualKey);
               break;
             case 'removePrev':
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              deactivateKey(virtualKey);
               break;
             case 'Tab':
-              this.insertValue('    ');
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              this.textareaInsert('    ');
+              deactivateKey(virtualKey);
               break;
             case 'newLine':
-              this.insertValue('\n');
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              // this.textareaInsert('\n');
+              deactivateKey(virtualKey);
               break;
             case 'moveUp':
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              deactivateKey(virtualKey);
               break;
             case 'movePrev':
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              deactivateKey(virtualKey);
               break;
             case 'moveDown':
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              deactivateKey(virtualKey);
               break;
             case 'moveNext':
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              deactivateKey(virtualKey);
               break;
             case 'removeNext':
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+              deactivateKey(virtualKey);
               break;
             default: break;
           } // switch
+          this.fnHistory.push({
+            type: 'physicalKey',
+            eventType: event.type,
+            virtKey: virtualKey,
+            keyObj: keyObject,
+          });
         } else {
-          setTimeout(() => { virtualKey.classList.remove('active'); }, 250);
+          if (this.capsState) {
+            const currentPosition = this.textarea.selectionStart - 1;
+            let modString = this.textarea.value;
+            const initLenght = modString.length;
+            const currentChar = modString[currentPosition];
+            const newChar = currentChar.toLocaleUpperCase();
+            modString = modString.slice(0, currentPosition)
+            + newChar
+            + modString.slice(currentPosition + 1, initLenght - 1);
+            this.textarea.value = modString;
+          }
+          deactivateKey(virtualKey);
         }
       }
+
+      this.strings = this.textarea.value.split('\n');
+      this.saveToStorage();
     } // physical keyboard event
   }
 
@@ -435,33 +573,50 @@ class VirtualKeyboard {
       virtualKey = eventTarget;
       const keyName = eventTarget.getAttribute('data-keyname');
       keyObject = this.keyboards[this.actualLanguage].mapping[keyName];
+      this.eventHistory.push({
+        type: 'virtualKeyBefore',
+        fullEvent: event,
+        virtKey: virtualKey,
+        initStates: {
+          shiftState: this.shiftState,
+          capsState: this.capsState,
+          altState: this.altState,
+          controlState: this.controlState,
+        },
+        textareaState: {
+          selStart: this.textarea.selectionStart,
+          selEnd: this.textarea.selectionEnd,
+          text: this.textarea.value,
+        },
+        strings: this.strings,
+      });
       if (keyObject.isFn) {
         const eventCommand = keyObject.eventType;
         switch (eventCommand) {
           case 'insertTab':
             virtualKey.classList.add('active');
             this.textareaInsert('    ');
-            setTimeout(() => { virtualKey.classList.remove('active'); }, 450);
+            deactivateKey(virtualKey, 450);
             break;
           case 'removePrev':
             virtualKey.classList.add('active');
             this.textareaRemovePrev();
-            setTimeout(() => { virtualKey.classList.remove('active'); }, 450);
+            deactivateKey(virtualKey, 450);
             break;
           case 'removeNext':
             virtualKey.classList.add('active');
             this.textareaRemoveNext();
-            setTimeout(() => { virtualKey.classList.remove('active'); }, 450);
+            deactivateKey(virtualKey, 450);
             break;
           case 'newLine':
             virtualKey.classList.add('active');
             this.textareaInsert('\n');
-            setTimeout(() => { virtualKey.classList.remove('active'); }, 450);
+            deactivateKey(virtualKey, 450);
             break;
           case 'toggleCaps':
             this.toggleCaps(null);
             if (!this.capsState) {
-              setTimeout(() => { virtualKey.classList.remove('active'); }, 450);
+              deactivateKey(virtualKey, 450);
             } else {
               virtualKey.classList.add('active');
             }
@@ -473,7 +628,7 @@ class VirtualKeyboard {
             } else {
               const aLanguage = this.actualLanguage;
               const pairKeyObj = this.keyboards[aLanguage].mapping[keyObject.pairKey];
-              let pairKey = this.findKeyCodeElement(pairKeyObj.eventCode);
+              const pairKey = this.findKeyCodeElement(pairKeyObj.eventCode);
               setTimeout(() => {
                 if (hasClass(virtualKey, 'active')) { virtualKey.classList.remove('active'); }
                 if (hasClass(pairKey, 'active')) { pairKey.classList.remove('active'); }
@@ -487,12 +642,47 @@ class VirtualKeyboard {
             }
             break;
           case 'toggleControl':
+            this.toggleControl(null);
+            if (this.controlState) {
+              virtualKey.classList.add('active');
+            } else {
+              const aLanguage = this.actualLanguage;
+              const pairKeyObj = this.keyboards[aLanguage].mapping[keyObject.pairKey];
+              const pairKey = this.findKeyCodeElement(pairKeyObj.eventCode);
+              setTimeout(() => {
+                if (hasClass(virtualKey, 'active')) { virtualKey.classList.remove('active'); }
+                if (hasClass(pairKey, 'active')) { pairKey.classList.remove('active'); }
+              }, 250);
+            }
+            if (this.shiftState && this.controlState) {
+              this.toggleLanguage();
+            }
             break;
           case 'toggleAlt':
+            this.toggleAlt(null);
+            if (this.altState) {
+              virtualKey.classList.add('active');
+            } else {
+              const aLanguage = this.actualLanguage;
+              const pairKeyObj = this.keyboards[aLanguage].mapping[keyObject.pairKey];
+              const pairKey = this.findKeyCodeElement(pairKeyObj.eventCode);
+              setTimeout(() => {
+                if (hasClass(virtualKey, 'active')) { virtualKey.classList.remove('active'); }
+                if (hasClass(pairKey, 'active')) { pairKey.classList.remove('active'); }
+              }, 250);
+            }
+            if ((this.shiftState && this.altState)) {
+              this.toggleLanguage();
+            }
             break;
           case 'movePrev':
+            virtualKey.classList.add('active');
+            this.textareaMoveNext();
+            deactivateKey(virtualKey, 450);
             break;
           case 'moveNext':
+            this.textareaMoveNext();
+            deactivateKey(virtualKey, 450);
             break;
           case 'moveUp':
             break;
@@ -505,12 +695,30 @@ class VirtualKeyboard {
         if (this.shiftState) { insertValue = keyObject.charShift; }
         if (this.capsState) { insertValue = keyObject.charCaps; }
         if (this.shiftState && this.capsState) { insertValue = keyObject.char; }
-        // console.log( '#layoutListener, insertValue : ', insertValue );
         this.textareaInsert(insertValue);
         virtualKey.classList.add('active');
         setTimeout(() => { virtualKey.classList.remove('active'); }, 450);
       }
+      this.strings = this.textarea.value.split('\n');
+      this.eventHistory.push({
+        type: 'virtualKeyAfter',
+        fullEvent: event,
+        virtKey: virtualKey,
+        initStates: {
+          shiftState: this.shiftState,
+          capsState: this.capsState,
+          altState: this.altState,
+          controlState: this.controlState,
+        },
+        textareaState: {
+          selStart: this.textarea.selectionStart,
+          selEnd: this.textarea.selectionEnd,
+          text: this.textarea.value,
+        },
+        strings: this.strings,
+      });
     } // if really on-screen key pressed
+    this.saveToStorage();
   } // layoutListener
 }
 
