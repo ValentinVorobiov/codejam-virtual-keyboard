@@ -1,7 +1,10 @@
+import './assets/css/reset.css';
+import './assets/css/normalize.css';
+
 import './style.scss';
 
 /* eslint-disable import/extensions */
-import VirtualKeyboard from './assets/js/keyboard.class.js';
+import VirtualKeyboard from './assets/js/keyboard.class';
 
 // console.log('Script.js attached successfully');
 const mainContainer = document.querySelector('body');

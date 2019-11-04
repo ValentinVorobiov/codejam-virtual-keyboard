@@ -4,11 +4,10 @@
   "description": "RSSchool CodeJam Virtual Keyboard",
   "main": "index.html",
   "scripts": {
-    "test": "test",
-    "start": "webpack-dev-server --hot --open --mode development --disable-host-check",
+    "start-web": "webpack-dev-server --hot --open --watch --mode development --disable-host-check",
     "dev": "webpack --mode development",
-    "build": "webpack --mode production",
-    "watch": "webpack --mode development --watch"
+    "build": "webpack --config webpack.config.js --mode production",
+    "start": "webpack --config webpack.config.js --mode production && webpack-dev-server --hot --open --disable-host-check"
   },
   "repository": {
     "type": "git",
@@ -25,13 +24,16 @@
     "css-loader": "^3.2.0",
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-loader": "^3.0.2",
     "eslint-plugin-import": "^2.18.2",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "fibers": "^4.0.2",
     "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.12.0",
     "sass": "^1.23.1",
     "sass-loader": "^8.0.0",
+    "terser-webpack-plugin": "^2.2.1",
     "url-loader": "^2.2.0",
     "util": "^0.12.1",
     "webpack": "^4.41.2",

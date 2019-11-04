@@ -1,7 +1,9 @@
 const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './app.js',
@@ -9,57 +11,42 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },
+  devtool: 'source-map',
   module: {
 
     rules: [
 
+      /*  JavaScript  */
+      {
+        test: /.(js)$/,
+        exclude: /node_modules/,
+        use: ['eslint-loader'],
+      },
+
+      /*      CSS     */
+      // {
+      //   test: /\.css/i,
+      //   use: [
+      //     'style-loader',
+      //     MiniCssExtractPlugin.loader,
+      //     {
+      //       loader: 'css-loader',
+      //     },
+      //   ]
+      // },
+
       /* SASS / SCSS  */
       {
-        test: /\.s[ac]ss$/i,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: ['css-loader', 'sass-loader'],
-        }),
-      },
-
-      /* Fonts */
-      {
-        test: /\.(woff(2)?|ttf|eot|otf|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        // test: /\.s[ac]ss$/i,
+        test: /\.css|sass|scss$/i,
         use: [
+          'style-loader',
+          MiniCssExtractPlugin.loader,
           {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'assets/fonts/',
-              // outputPath: 'fonts/'
-            },
+            loader: 'css-loader',
           },
-        ],
-      },
-
-      /* Images */
-      {
-        test: /\.(png|jpe?g|gif|svg)$/i,
-        use: [
           {
-            loader: 'file-loader',
-            options: {
-              // outputPath: 'images/',
-              outputPath: 'assets/img/',
-            },
-          },
-        ],
-      },
-      /* Images */
-      {
-        test: /\.(png|jpg|gif|svg)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              // outputPath: 'images/',
-              outputPath: 'assets/img/',
-            },
+            loader: 'sass-loader',
           },
         ],
       },
@@ -68,57 +55,18 @@ module.exports = {
   },
 
   plugins: [
-    new ExtractTextPlugin('style.css'),
-    // new ExtractTextPlugin( 'assets/css/style.css' ),
-
-    new HtmlWebpackPlugin({
-      inject: false,
-      hash: true,
-      // template: './index.html',
-      // filename: 'index.html'
-      template: './index.html',
-      filename: 'index.html',
+    new MiniCssExtractPlugin({
+      filename: 'bundle.css',
     }),
-
-    new CopyWebpackPlugin([
-      /* Copy images */
-      {
-        // from: './images',
-        // to: 'images'
-        from: './assets/img',
-        to: 'assets/img',
+    new webpack.LoaderOptionsPlugin({
+      test: /.js$/,
+      options: {
+        eslint: {
+          configFile: path.resolve(__dirname, '.eslintrc'), // this is my helper for resolving paths
+          cache: false,
+        },
       },
-      /* Copy JSON data */
-      {
-        from: './assets/data',
-        to: 'assets/data',
-      },
-      /* Copy Fonts */
-      {
-        from: './assets/fonts',
-        to: 'assets/fonts',
-      },
-      /* CSS Files */
-      {
-        from: './assets/css',
-        to: 'assets/css',
-      },
-      /* main js file */
-      {
-        from: './script.js',
-        to: './',
-      },
-      /* all js files */
-      {
-        from: './assets/js',
-        to: '/assets/js',
-      },
-      /* favicon */
-      {
-        from: './*.ico',
-        to: './',
-      },
-    ]),
+    }),
   ],
 
   devServer: {

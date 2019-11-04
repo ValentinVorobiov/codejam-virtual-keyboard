@@ -3,6 +3,9 @@ import keyboardLayout from './keyboard.layout.js';
 
 import { keymapEN, keymapRU } from './keyboard.mapping.js';
 
+// import '../sass/common.scss';
+// import '../sass/virtual-keyboard.scss';
+
 function hasClass(el, className) {
   let result = false;
   if (el.getAttribute('class').indexOf(className) > -1) {
@@ -87,7 +90,7 @@ class VirtualKeyboard {
       const importedState = JSON.parse(localStorage['rs-virtkey']);
       this.actualLanguage = importedState.actualLanguage;
       this.strings = importedState.strings.slice();
-      this.capsState = importedState.capsState;
+      this.capsState = importedState.states.capsState;
       // this.shiftState = importedState.states.shiftState;
       // this.altState = importedState.states.altState;
       // this.controlState = importedState.states.controlState;
@@ -191,8 +194,8 @@ class VirtualKeyboard {
           captionShift.innerHTML = 'Space';
           captionCaps.innerHTML = 'Space';
         }
-        if (this.capsState && aKey.eventCode === 'CapsLock') {
-          kbKey.classList.add('active');
+        if (aKey.eventCode === 'CapsLock') {
+          if (this.capsState) { kbKey.classList.add('active'); }
         }
 
         kbKey.insertAdjacentElement('beforeEnd', captionRegular);
