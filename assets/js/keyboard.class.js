@@ -418,8 +418,8 @@ class VirtualKeyboard {
       this.textarea.selectionStart = this.currentPosition;
       this.textarea.selectionEnd = this.currentPosition;
     } else {
-      this.textarea.selectionStart = 0;
-      this.textarea.selectionEnd = 0;
+      this.textarea.selectionStart = this.textarea.value.length;
+      this.textarea.selectionEnd = this.textarea.value.length;
     }
   }
 
