@@ -1,0 +1,122 @@
+@import './common.scss' ;
+
+.virtual-keyboard__input-wrapper {
+  @include flexbox;
+  @include flexbox-center-contents;
+  @include default-font;
+  width: 100%;
+  max-height: 280px;
+
+  .virtual-keyboard__input {
+    max-width: 100%;
+    max-height: 100%;
+    overflow-y: scroll;
+  }
+
+}
+
+.virtual-keyboard__layout-wrapper {
+  @include flexbox;
+  @include flexbox-center-contents;
+  @include border-box-sizing;
+  padding: 1rem;
+
+  .virtual-keyboard__layout-row {
+    @include flexbox;
+    width: 85%;
+    // max-width: 1000px;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    @include border-box-sizing;
+    padding: 0.25rem 0.5rem;
+    @include auto-margins;
+
+
+    .keyboard-key{
+      min-width: 50px;
+      min-height: 50px;
+      padding: 0.25rem 0.5rem;
+      @include inline-flexbox;
+      @include flexbox-center-contents;
+      @include border-box-sizing;
+      background-color: $default_bgcolor;
+      color: $default-forecolor;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+
+      &.key_space{
+        min-width: 42%;
+      }
+
+      &.key_tab, &.key_capslock, &.key_shift_left,
+      &.key_delete, &.key_enter, &.key_shift_right {
+        min-width: 120px;
+      }
+
+      &.key_enter {
+        min-width: 190px;
+      }
+
+    }
+
+    .keyboard-key:hover,
+    .keyboard-key:active {
+      transition: 0.25s all ease-in;
+      background-color: $default-bghover;
+      color: $default-forehover;
+    }
+
+    .keyboard-key:focus,
+    .keyboard-key.active,
+    .keyboard-key.down {
+      transition: 0.25s all ease-in;
+      background-color: $default-bghover;
+      color: $default-forehover;
+      border-radius: 70%;
+    }
+
+
+
+    /* Display Logic */
+
+
+  }
+
+  &:not( .shift-on ):not( .caps-on ){
+    .keyboard-key .caption-normal { display: inline-block; }
+    .keyboard-key .caption-shift { display: none; }
+    .keyboard-key .caption-caps { display: none; }
+  }
+
+  &.caps-on {
+    .keyboard-key .caption-normal { display: none; }
+    .keyboard-key .caption-shift { display: none; }
+    .keyboard-key .caption-caps { display: inline-block; }
+    .keyboard-key.key_capslock{
+      transition: 0.25s all ease-in;
+      background-color: $default-bghover;
+      color: $default-forehover;
+    }
+  }
+
+  &.shift-on {
+    .keyboard-key .caption-normal { display: none; }
+    .keyboard-key .caption-shift { display: inline-block; }
+    .keyboard-key .caption-caps { display: none; }
+  }
+
+  &.shift-on.caps-on{
+    .keyboard-key .caption-normal { display: inline-block; }
+    .keyboard-key .caption-shift { display: none; }
+    .keyboard-key .caption-caps { display: none; }
+  }
+
+}
+
+
+
+
+
+

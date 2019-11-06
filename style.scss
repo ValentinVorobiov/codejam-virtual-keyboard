@@ -1,0 +1,21 @@
+@import './assets/sass/common.scss' ;
+@import './assets/sass/virtual-keyboard.scss' ;
+
+html, body {
+  @include default-font;
+  font-size: 20px !important;
+}
+
+body.virtkeyb-page {
+  min-height: 100vw;
+  @include default-font;
+  font-size: 20px !important;
+}
+
+.virtkeyb-page__wrapper {
+  @include default-font;
+  @include container;
+  @include flexbox;
+  @include border-box-sizing;
+  padding: 2rem;
+}
